@@ -11,3 +11,4 @@ RGBLIGHT_ENABLE = yes
 
 EXTRAFLAGS += -flto # Make the hex smaller
 CONSOLE_ENABLE = no
+IDLE_RGBLIGHT_ENABLE = yes
