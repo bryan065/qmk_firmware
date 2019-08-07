@@ -116,14 +116,39 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 };
 
+// OLD****************************************************
+//light up per key LED based on keycode. If keycode is KC_NO or KC_TRNS, don't light up that key
+//void rgblight_set_layer(uint8_t RGB_r,uint8_t RGB_g,uint8_t RGB_b, uint32_t state) {
+//  //turn per led on
+//  int KeyCounter = 0; //keycounter contains the physical offset to match up rgblight_setrgb_at with the physical position
+//  for (uint8_t r = 0; r < MATRIX_ROWS; r++) {
+//    for (uint8_t c = 0; c < MATRIX_COLS; c++) {
+//      switch (keymap_key_to_keycode(biton32(state), (keypos_t){ .row = r, .col = c })) {
+//        case KC_TRNS:
+//          break;
+//        case KC_NO:
+//          break;
+//        default:
+//          rgblight_setrgb_at(RGB_r,RGB_g,RGB_b, KeyCounter);
+//          break;
+//      }
+//      KeyCounter = (r*15) + c;
+//    }
+//  }
+//}
+// OLD****************************************************
+
 //light up per key LED based on keycode. If keycode is KC_NO or KC_TRNS, don't light up that key
 void rgblight_set_layer(uint8_t RGB_r,uint8_t RGB_g,uint8_t RGB_b, uint32_t state) {
   //turn per led on
-  int KeyCounter = 0;
+  int KeyCounter = 0; //keycounter contains the physical offset to match up rgblight_setrgb_at with the physical position
   for (uint8_t r = 0; r < MATRIX_ROWS; r++) {
+    if (record->event.pressed) { break; }
     for (uint8_t c = 0; c < MATRIX_COLS; c++) {
+      if (record->event.pressed) { break; }
       switch (keymap_key_to_keycode(biton32(state), (keypos_t){ .row = r, .col = c })) {
         case KC_TRNS:
+          break;
         case KC_NO:
           break;
         default:
