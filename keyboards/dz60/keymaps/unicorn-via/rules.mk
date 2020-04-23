@@ -1,3 +1,4 @@
+EXTRAFLAGS += -flto # Make the hex smaller
 BOOTMAGIC_ENABLE = lite	# Virtual DIP switch configuration(+1000)
 MOUSEKEY_ENABLE = no	# Mouse keys(+4700)
 EXTRAKEY_ENABLE = yes	# Audio control and System control(+450)
@@ -7,8 +8,9 @@ SLEEP_LED_ENABLE = no  # Breathing sleep LED during USB suspend
 NKRO_ENABLE = yes		# USB Nkey Rollover - if this doesn't work, see here: https://github.com/tmk/tmk_keyboard/wiki/FAQ#nkro-doesnt-work
 BACKLIGHT_ENABLE = no  # Enable keyboard backlight functionality
 AUDIO_ENABLE = no
-RGBLIGHT_ENABLE = yes
-
-EXTRAFLAGS += -flto # Make the hex smaller
 CONSOLE_ENABLE = no
+RGBLIGHT_ENABLE = no
+RGB_MATRIX_ENABLE = WS2812
+
 VIA_ENABLE = yes
+LINK_TIME_OPTIMIZATION_ENABLE = yes

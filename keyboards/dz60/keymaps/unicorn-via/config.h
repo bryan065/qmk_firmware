@@ -3,12 +3,11 @@
 #undef DESCRIPTION
 #undef DEBOUNCE
 
-#undef RGBLED_NUM
-#undef RGBLIGHT_ANIMATIONS
-
 #define MANUFACTURER    Anahein Electronics
 #define PRODUCT         Unicorn RX-0 SplitSpace Keyboard
-#define DESCRIPTION     DZ60 Keyboard
+
+//disable VIA backlight function
+#define RGB_BACKLIGHT_ENABLED 0
 
 #define NO_ACTION_MACRO
 #define NO_ACTION_FUNCTION
@@ -16,25 +15,43 @@
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
 #define DEBOUNCE 3
 
-//RBGLIGHT animations
-#define RGBLIGHT_EFFECT_BREATHING
-#define RGBLIGHT_EFFECT_RAINBOW_MOOD
-#define RGBLIGHT_EFFECT_RAINBOW_SWIRL
-#define RGBLIGHT_EFFECT_STATIC_GRADIENT
+// disable backlight after timeout in minutes, 0 = no timeout
+#define RGB_BACKLIGHT_DISABLE_AFTER_TIMEOUT 15
 
-//RGB config
-#define RGBLED_NUM 100 //per-key LEDS: 65, keycode matrix size: 75, underglow LEDS: 25
-#define RGBLIGHT_LIMIT_VAL 255
+//RGB Matrix Effects
+#define RGB_MATRIX_STARTUP_MODE RGB_MATRIX_CYCLE_LEFT_RIGHT
+#define RGB_MATRIX_KEYPRESSES               // Keypress effects
+#define RGB_MATRIX_FRAMEBUFFER_EFFECTS      // Frame buffer effects
+  //disable standard effects
+  #define DISABLE_RGB_MATRIX_ALPHAS_MODS
+  #define DISABLE_RGB_MATRIX_BAND_SAT
+  #define DISABLE_RGB_MATRIX_BAND_VAL
+  #define DISABLE_RGB_MATRIX_BAND_PINWHEEL_SAT
+  #define DISABLE_RGB_MATRIX_BAND_PINWHEEL_VAL
+  #define DISABLE_RGB_MATRIX_BAND_SPIRAL_SAT
+  #define DISABLE_RGB_MATRIX_BAND_SPIRAL_VAL
+  #define DISABLE_RGB_MATRIX_JELLYBEAN_RAINDROPS
+  #define DISABLE_RGB_MATRIX_RAINDROPS
+  //disable keypress effects
+  #define DISABLE_RGB_MATRIX_SOLID_REACTIVE
+  #define DISABLE_RGB_MATRIX_SOLID_REACTIVE_SIMPLE
+  #define DISABLE_RGB_MATRIX_SOLID_REACTIVE_WIDE
+  #define DISABLE_RGB_MATRIX_SOLID_REACTIVE_MULTIWIDE
+  #define DISABLE_RGB_MATRIX_SOLID_REACTIVE_CROSS
+  #define DISABLE_RGB_MATRIX_SOLID_REACTIVE_MULTICROSS
+  #define DISABLE_RGB_MATRIX_SOLID_REACTIVE_NEXUS
+  #define DISABLE_RGB_MATRIX_SOLID_REACTIVE_MULTINEXU
+  #define DISABLE_RGB_MATRIX_MULTISPLASH
+
+//RGB Matrix Config
+#define RGB_DISABLE_AFTER_TIMEOUT 0         // number of ticks to wait until disabling effects
+#define RGB_DISABLE_WHEN_USB_SUSPENDED true // turn off effects when suspended
+#define RGB_MATRIX_LED_PROCESS_LIMIT 4
+#define RGB_MATRIX_LED_FLUSH_LIMIT 26       // limit refresh rate to ~45fps
+#define DRIVER_LED_TOTAL 100                // The number of LEDs connected
+#define RGB_DI_PIN E2                       // Assign to pin E2 on DZ60 board
 #define RGBLIGHT_SLEEP
-
-//re-order LED strip
-#define RGBLIGHT_LED_MAP { \
-	0 ,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, \
-	16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, \
-	32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 44, 46, 47, 48, \
-	49, 50, 51, 52, 53, 54, 55, 57, 58, 59, 60, 62, 63, 65, 67, \
-	69, 70, 71, 72, 73, 74,	75, 76, 77, 78, 79, 80, 81, 82, 83, \
-	84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, \
-	99, 15, 30, 43, 45, 56, 61, 64, 66, 68 }
-
-// 15, 30, 43, 45, 56, 61, 64, 66, 68 are dead/blank keys that dont "exist" and have no LED
+#define RGB_MATRIX_MAXIMUM_BRIGHTNESS 255
+#define RGB_MATRIX_STARTUP_HUE 0
+#define RGB_MATRIX_STARTUP_SAT 255
+#define RGB_MATRIX_STARTUP_VAL 240
