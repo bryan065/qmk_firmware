@@ -17,6 +17,7 @@
 #pragma once
 
 #include "quantum.h"
+#include "MPU9250/MPU9250.h" /* MPU9250 for tilt sensor */
 
 /* This is a shortcut to help you visually see your layout.
  *
@@ -37,3 +38,11 @@
 	{ K20,   K21,   K22,   KC_NO, KC_NO }, \
 	{ K30,   K31,   K32,   K33,   KC_NO }  \
 }
+
+void init_GH_color(void);
+void update_star_power(bool* star);
+void set_GH_green(bool set);
+void set_GH_red(bool set);
+void set_GH_yellow(bool set);
+void set_GH_blue(bool set);
+void set_GH_orange(bool set);
