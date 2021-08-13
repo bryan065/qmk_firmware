@@ -53,6 +53,7 @@ static struct {
 #ifdef SAMPLE_BATTERY
     uint16_t last_battery_update;
     uint32_t vbat;
+    uint32_t batlevel;
 #endif
     uint16_t last_connection_update;
 } state;
@@ -443,6 +444,8 @@ bool adafruit_ble_enable_keyboard(void) {
     static const char kGapDevName[] PROGMEM = "AT+GAPDEVNAME=" STR(PRODUCT);
     // Turn on keyboard support
     static const char kHidEnOn[] PROGMEM = "AT+BLEHIDEN=1";
+    // Turn on Battery Level support
+    static const char kBatteryLevel[] PROGMEM = "AT+BLEBATTEN=1";
 
     // Adjust intervals to improve latency.  This causes the "central"
     // system (computer/tablet) to poll us every 10-30 ms.  We can't
@@ -457,7 +460,7 @@ bool adafruit_ble_enable_keyboard(void) {
     // Turn down the power level a bit
     static const char  kPower[] PROGMEM             = "AT+BLEPOWERLEVEL=-12";
     static PGM_P const configure_commands[] PROGMEM = {
-        kEcho, kGapIntervals, kGapDevName, kHidEnOn, kPower, kATZ,
+        kEcho, kGapIntervals, kGapDevName, kHidEnOn, kPower, kBatteryLevel, kATZ
     };
 
     uint8_t i;
@@ -556,6 +559,17 @@ void adafruit_ble_task(void) {
         state.last_battery_update = timer_read();
 
         state.vbat = analogReadPin(BATTERY_LEVEL_PIN);
+        
+        state.batlevel = ((state.vbat * 2 * 3.3) - 3200) / (4200-3200) * 100;
+        if (state.batlevel > 100) {
+            state.batlevel = 100;
+        }
+        
+        // Update battery level for the Battery Service (if enabled)
+        at_command_P(PSTR("AT+BLEBATTVAL=72"), NULL, 0);
+        //char cmd[46];
+        //snprintf(cmd, sizeof(cmd), "AT+BLEBATTVAL=%d", state.batlevel);
+        //at_command(cmd, NULL, 0, false);
     }
 #endif
 }
