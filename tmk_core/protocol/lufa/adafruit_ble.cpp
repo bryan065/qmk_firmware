@@ -461,6 +461,8 @@ bool adafruit_ble_enable_keyboard(void) {
     static const char kHidEnOn[] PROGMEM = "AT+BLEHIDEN=1";
     // Turn on Battery Level support
     static const char kBatteryLevel[] PROGMEM = "AT+BLEBATTEN=1";
+    // Turn on gamepad support
+    static const char kHidGamepad[] PROGMEM = "AT+BLEHIDGAMEPADEN=" STR(ADAFRUIT_JOYSTICK);
 
     // Adjust intervals to improve latency.  This causes the "central"
     // system (computer/tablet) to poll us every 10-30 ms.  We can't
@@ -475,7 +477,7 @@ bool adafruit_ble_enable_keyboard(void) {
     // Turn down the power level a bit
     static const char  kPower[] PROGMEM             = "AT+BLEPOWERLEVEL=" STR(POWER_LEVEL);
     static PGM_P const configure_commands[] PROGMEM = {
-        kEcho, kGapIntervals, kGapDevName, kHidEnOn, kBatteryLevel, kPower, kATZ
+        kEcho, kGapIntervals, kGapDevName, kHidEnOn, kBatteryLevel, kHidGamepad, kPower, kATZ
     };
 
     uint8_t i;
