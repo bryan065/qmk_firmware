@@ -41,6 +41,17 @@
 #    define BATTERY_LEVEL_PIN B5
 #endif
 
+// Define default max battery voltage and minimum voltage in milivolts.
+// Assuming the official Adafruit LiPo battery is used. The battery is listed with full charge @ ~4.2v and cutoff at ~2.8v.
+// However, Adafruit lists minimum voltage for the feather at ~3v.
+// https://www.adafruit.com/product/328
+#ifndef MAX_BATTERY_VOLTAGE
+#   define MAX_BATTERY_VOLTAGE 4200
+#endif
+#ifndef MIN_BATTERY_VOLTAGE
+#   define MIN_BATTERY_VOLTAGE 3000
+#endif
+
 static struct {
     bool is_connected;
     bool initialized;
@@ -53,7 +64,7 @@ static struct {
 #ifdef SAMPLE_BATTERY
     uint16_t last_battery_update;
     uint32_t vbat;
-    uint32_t batlevel;
+    uint8_t  batlevel;
 #endif
     uint16_t last_connection_update;
 } state;
@@ -560,16 +571,17 @@ void adafruit_ble_task(void) {
 
         state.vbat = analogReadPin(BATTERY_LEVEL_PIN);
         
-        state.batlevel = ((state.vbat * 2 * 3.3) - 3200) / (4200-3200) * 100;
+        // Convert millivolt readout to percentage, cap it between 0 and 100 percent.
+        state.batlevel = ((state.vbat * 2 * 3.3) - MIN_BATTERY_VOLTAGE) / (MAX_BATTERY_VOLTAGE-MIN_BATTERY_VOLTAGE) * 100;
         if (state.batlevel > 100) {
             state.batlevel = 100;
         }
+        else if (state.batlevel < 0) {
+            state.batlevel = 0;
+        }
         
         // Update battery level for the Battery Service (if enabled)
-        at_command_P(PSTR("AT+BLEBATTVAL=72"), NULL, 0);
-        //char cmd[46];
-        //snprintf(cmd, sizeof(cmd), "AT+BLEBATTVAL=%d", state.batlevel);
-        //at_command(cmd, NULL, 0, false);
+        adafruit_ble_set_battery_level(state.batlevel);
     }
 #endif
 }
@@ -702,6 +714,16 @@ bool adafruit_ble_set_mode_leds(bool on) {
     // not connected, as that would be confusing.
     at_command_P(on && state.is_connected ? PSTR("AT+HWGPIO=19,1") : PSTR("AT+HWGPIO=19,0"), NULL, 0);
     return true;
+}
+
+bool adafruit_ble_set_battery_level(uint8_t level) {
+    char cmd[20];
+    if(!state.configured) {
+        return false;
+    }
+
+    snprintf(cmd, sizeof(cmd), "AT+BLEBATTVAL=%d", level);
+    return at_command(cmd, NULL, 0, false);
 }
 
 // https://learn.adafruit.com/adafruit-feather-32u4-bluefruit-le/ble-generic#at-plus-blepowerlevel
