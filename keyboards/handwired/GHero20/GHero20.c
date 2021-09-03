@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "GHero20.h"
+#include "ghero20.h"
 
 static uint16_t dynamic_loop_timer;
 static uint16_t star_timer;

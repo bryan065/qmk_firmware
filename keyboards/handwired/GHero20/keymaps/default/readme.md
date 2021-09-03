@@ -1,1 +1,1 @@
-# The default keymap for GHero20
+# The default keymap for ghero20
