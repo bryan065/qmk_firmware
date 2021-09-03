@@ -95,15 +95,16 @@ Enter the bootloader in 3 ways:
 
 ## To-do
 
-- [ ] Accelerometer / Gyroscope for tilt control (star power)
+- [x] Accelerometer / Gyroscope for tilt control (star power)
     - MPU-9250
-- [ ] Revamp fret button design for smoother and silent operation
+    - Added left/right hand support
+- [x] Revamp fret button design for smoother and silent operation
 - [ ] ~~OLED Display~~
     - Used for info display such as battery life
 - [x] BLE Battery Service
     - Will report battery level to Windows 10 1809 or newer.
     - OLED Display no longer needed.
-- [ ] Additional ground breakouts for WS2812 and MPU-9250.
+- [x] Additional ground breakouts for WS2812 and MPU-9250.
 - [x] Update strum part to enable tuning
     - [x]  Tension
     - [x]  Actuation distance/angle
@@ -115,4 +116,5 @@ Enter the bootloader in 3 ways:
     - [x] ~~Fret switches~~ *(Not enough clearance in neck for sockets)*
         - *Upper neck would have to be redesigned to have a removable PCB part like the lower neck to accommodate something like Kailh low profile switches to make room for hotswap sockets.*
 - [ ] Upload STL's for guitar components
-- [ ] WS2812 RGB's
+- [x] WS2812 RGB's
+    - Per key lighting & dynamic lightin
