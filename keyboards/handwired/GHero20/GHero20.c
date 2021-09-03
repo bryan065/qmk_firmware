@@ -214,12 +214,23 @@ void update_star_power(bool* star) {
     a = getAccScaled(x,100);
     g = getGyroScaled(z,10);
 
-    if (a >= MPU_ANGLE_SENS && g <= MPU_SPEED_SENS) {
-        tap_code(KC_M);  //STAR POWER KEYCODE
+    #ifndef STAR_LEFT_HAND
+        if (a >= MPU_ANGLE_SENS && g <= -MPU_SPEED_SENS) {
+            tap_code(KC_M);  //STAR POWER KEYCODE
 
-        *star = true;
-        rgblight_mode(RGBLIGHT_MODE_RAINBOW_SWIRL);     // Party RGB's when start power activated
-        star_timer = timer_read();                      // Start timer for party RGB
-    }
+            *star = true;
+            rgblight_mode(RGBLIGHT_MODE_RAINBOW_SWIRL);     // Party RGB's when start power activated
+            star_timer = timer_read();                      // Start timer for party RGB
+        }
+    #else
+        if (a >= MPU_ANGLE_SENS && g >= MPU_SPEED_SENS) {
+            tap_code(KC_M);  //STAR POWER KEYCODE
+
+            *star = true;
+            rgblight_mode(RGBLIGHT_MODE_RAINBOW_SWIRL);     // Party RGB's when start power activated
+            star_timer = timer_read();                      // Start timer for party RGB
+        }
+    #endif
+
 
 }

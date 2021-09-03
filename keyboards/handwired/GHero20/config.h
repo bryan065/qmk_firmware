@@ -70,11 +70,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * MPU_ANGLE_SENS: Angle at which the star power starts to activate.
 * Default: 60       Max: 100    Min: 50
 * MPU_SPEED_SENS: Speed at which the star power activates, used to prevent unintentional star power usage.
-* Default: -700     Max: -2000  Min: -200
+* Default: 700      Max: 2000   Min: 200
 *
+* STAR_LEFT_HAND: Uncomment for left handed users to activate star power.
 */
 #define MPU_ANGLE_SENS 60
-#define MPU_SPEED_SENS -700
+#define MPU_SPEED_SENS 700
+//#define STAR_LEFT_HAND
 
 #define RGB_DI_PIN C6
 #ifdef RGB_DI_PIN
