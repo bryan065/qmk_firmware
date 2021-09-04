@@ -41,6 +41,21 @@
 #    define BATTERY_LEVEL_PIN B5
 #endif
 
+// Define default max battery voltage and minimum voltage in milivolts.
+// Assuming the official Adafruit LiPo battery is used. The battery is listed with full charge @ ~4.2v and cutoff at ~2.8v.
+// However, Adafruit lists minimum voltage for the feather at ~3v.
+// https://www.adafruit.com/product/328
+#ifndef MAX_BATTERY_VOLTAGE
+#   define MAX_BATTERY_VOLTAGE 4200
+#endif
+#ifndef MIN_BATTERY_VOLTAGE
+#   define MIN_BATTERY_VOLTAGE 3000
+#endif
+
+#ifndef POWER_LEVEL
+#   define POWER_LEVEL -12
+#endif
+
 static struct {
     bool is_connected;
     bool initialized;
@@ -53,6 +68,7 @@ static struct {
 #ifdef SAMPLE_BATTERY
     uint16_t last_battery_update;
     uint32_t vbat;
+    uint8_t  batlevel;
 #endif
     uint16_t last_connection_update;
 } state;
@@ -443,6 +459,8 @@ bool adafruit_ble_enable_keyboard(void) {
     static const char kGapDevName[] PROGMEM = "AT+GAPDEVNAME=" STR(PRODUCT);
     // Turn on keyboard support
     static const char kHidEnOn[] PROGMEM = "AT+BLEHIDEN=1";
+    // Turn on Battery Level support
+    static const char kBatteryLevel[] PROGMEM = "AT+BLEBATTEN=1";
 
     // Adjust intervals to improve latency.  This causes the "central"
     // system (computer/tablet) to poll us every 10-30 ms.  We can't
@@ -455,9 +473,9 @@ bool adafruit_ble_enable_keyboard(void) {
     static const char kATZ[] PROGMEM = "ATZ";
 
     // Turn down the power level a bit
-    static const char  kPower[] PROGMEM             = "AT+BLEPOWERLEVEL=-12";
+    static const char  kPower[] PROGMEM             = "AT+BLEPOWERLEVEL=" STR(POWER_LEVEL);
     static PGM_P const configure_commands[] PROGMEM = {
-        kEcho, kGapIntervals, kGapDevName, kHidEnOn, kPower, kATZ,
+        kEcho, kGapIntervals, kGapDevName, kHidEnOn, kBatteryLevel, kPower, kATZ
     };
 
     uint8_t i;
@@ -556,6 +574,18 @@ void adafruit_ble_task(void) {
         state.last_battery_update = timer_read();
 
         state.vbat = analogReadPin(BATTERY_LEVEL_PIN);
+
+        // Convert millivolt readout to percentage, cap it between 0 and 100 percent.
+        state.batlevel = ((state.vbat * 2 * 3.3) - MIN_BATTERY_VOLTAGE) / (MAX_BATTERY_VOLTAGE-MIN_BATTERY_VOLTAGE) * 100;
+        if (state.batlevel > 100) {
+            state.batlevel = 100;
+        }
+        else if (state.batlevel < 0) {
+            state.batlevel = 0;
+        }
+
+        // Update battery level for the Battery Service (if enabled)
+        adafruit_ble_set_battery_level(state.batlevel);
     }
 #endif
 }
@@ -688,6 +718,15 @@ bool adafruit_ble_set_mode_leds(bool on) {
     // not connected, as that would be confusing.
     at_command_P(on && state.is_connected ? PSTR("AT+HWGPIO=19,1") : PSTR("AT+HWGPIO=19,0"), NULL, 0);
     return true;
+}
+
+bool adafruit_ble_set_battery_level(uint8_t level) {
+    char cmd[18];
+    if(!state.configured) {
+        return false;
+    }
+    snprintf(cmd, sizeof(cmd), "AT+BLEBATTVAL=%d", level);
+    return at_command(cmd, NULL, 0, false);
 }
 
 // https://learn.adafruit.com/adafruit-feather-32u4-bluefruit-le/ble-generic#at-plus-blepowerlevel
