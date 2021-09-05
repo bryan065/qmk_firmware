@@ -49,7 +49,7 @@
 #   define MAX_BATTERY_VOLTAGE 4300
 #endif
 #ifndef MIN_BATTERY_VOLTAGE
-#   define MIN_BATTERY_VOLTAGE 3000
+#   define MIN_BATTERY_VOLTAGE 2800
 #endif
 
 #ifndef POWER_LEVEL
@@ -68,7 +68,7 @@ static struct {
 #ifdef SAMPLE_BATTERY
     uint16_t last_battery_update;
     uint32_t vbat;
-    uint16_t batlevel;
+    int16_t batlevel;
 #endif
     uint16_t last_connection_update;
 } state;
@@ -576,7 +576,7 @@ void adafruit_ble_task(void) {
         state.vbat = analogReadPin(BATTERY_LEVEL_PIN);
 
         // Convert millivolt readout to percentage, cap it between 0 and 100 percent.
-        state.batlevel = (((state.vbat * 2 * 3.3) - (uint16_t)MIN_BATTERY_VOLTAGE) / ((uint16_t)MAX_BATTERY_VOLTAGE-(uint16_t)MIN_BATTERY_VOLTAGE)) * 100;
+        state.batlevel = (((state.vbat * 2 * 3.3) - (int16_t)MIN_BATTERY_VOLTAGE) / ((int16_t)MAX_BATTERY_VOLTAGE-(int16_t)MIN_BATTERY_VOLTAGE)) * 100;
         if (state.batlevel > 95) {
             state.batlevel = 100;
         }
@@ -585,7 +585,7 @@ void adafruit_ble_task(void) {
         }
 
         // Update battery level for the Battery Service (if enabled)
-        adafruit_ble_set_battery_level(state.batlevel);
+        adafruit_ble_set_battery_level((uint8_t)state.batlevel);
     }
 #endif
 }
@@ -705,7 +705,7 @@ void adafruit_ble_send_mouse_move(int8_t x, int8_t y, int8_t scroll, int8_t pan,
 
 uint32_t adafruit_ble_read_battery_voltage(void) { return state.vbat; }
 
-uint16_t adafruit_ble_read_battery_level(void) { return state.batlevel; }
+int16_t adafruit_ble_read_battery_level(void) { return state.batlevel; }
 
 bool adafruit_ble_set_mode_leds(bool on) {
     if (!state.configured) {
