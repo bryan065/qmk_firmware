@@ -46,7 +46,7 @@
 // However, Adafruit lists minimum voltage for the feather at ~3v.
 // https://www.adafruit.com/product/328
 #ifndef MAX_BATTERY_VOLTAGE
-#   define MAX_BATTERY_VOLTAGE 4200
+#   define MAX_BATTERY_VOLTAGE 4300
 #endif
 #ifndef MIN_BATTERY_VOLTAGE
 #   define MIN_BATTERY_VOLTAGE 3000
@@ -68,7 +68,7 @@ static struct {
 #ifdef SAMPLE_BATTERY
     uint16_t last_battery_update;
     uint32_t vbat;
-    uint8_t  batlevel;
+    uint16_t batlevel;
 #endif
     uint16_t last_connection_update;
 } state;
@@ -576,8 +576,8 @@ void adafruit_ble_task(void) {
         state.vbat = analogReadPin(BATTERY_LEVEL_PIN);
 
         // Convert millivolt readout to percentage, cap it between 0 and 100 percent.
-        state.batlevel = ((state.vbat * 2 * 3.3) - MIN_BATTERY_VOLTAGE) / (MAX_BATTERY_VOLTAGE-MIN_BATTERY_VOLTAGE) * 100;
-        if (state.batlevel > 100) {
+        state.batlevel = (((state.vbat * 2 * 3.3) - (uint16_t)MIN_BATTERY_VOLTAGE) / ((uint16_t)MAX_BATTERY_VOLTAGE-(uint16_t)MIN_BATTERY_VOLTAGE)) * 100;
+        if (state.batlevel > 95) {
             state.batlevel = 100;
         }
         else if (state.batlevel < 0) {
@@ -704,6 +704,8 @@ void adafruit_ble_send_mouse_move(int8_t x, int8_t y, int8_t scroll, int8_t pan,
 #endif
 
 uint32_t adafruit_ble_read_battery_voltage(void) { return state.vbat; }
+
+uint16_t adafruit_ble_read_battery_level(void) { return state.batlevel; }
 
 bool adafruit_ble_set_mode_leds(bool on) {
     if (!state.configured) {
