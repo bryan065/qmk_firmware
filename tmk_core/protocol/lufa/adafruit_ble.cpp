@@ -49,7 +49,7 @@
 #   define MAX_BATTERY_VOLTAGE 4300
 #endif
 #ifndef MIN_BATTERY_VOLTAGE
-#   define MIN_BATTERY_VOLTAGE 2800
+#   define MIN_BATTERY_VOLTAGE 3200
 #endif
 
 #ifndef POWER_LEVEL
