@@ -1,0 +1,4 @@
+DEBOUNCE_TYPE = asym_eager_defer_pk
+VIA_ENABLE = yes
+RGB_MATRIX_CUSTOM_USER = yes
+TAP_DANCE_ENABLE = yes
