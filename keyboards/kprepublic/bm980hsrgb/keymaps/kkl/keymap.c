@@ -17,9 +17,13 @@
 #include QMK_KEYBOARD_H
 
 #include "version.h"
+#include <lib/lib8tion/lib8tion.h>
 
 uint16_t     spam_timer;
 uint16_t     spam_interval = 1000;
+HSV          rgb_original_hsv;
+uint16_t     boot_timer;
+int8_t       boot_status = 0;
 
 static bool  RGB_MOD_FLAG;
 
@@ -36,6 +40,13 @@ uint8_t SPAM;
 // 7 - D
 // 8 - F
 // 9 - G
+
+// Define custom values if not defined in config.h
+#if STARTUP_ANIM_TIME < 0
+#   error STARTUP_ANIM_TIME must be greater than 0
+#elif !defined (STARTUP_ANIM_TIME)
+#   define STARTUP_ANIM_TIME 2200
+#endif
 
 enum keyboard_layers {
   _BASE = 0, 	// Base Layer
@@ -166,11 +177,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______,   _______, _______,                      _______,                             _______, _______, _______,      _______, KC_VOLD, _______,   _______, _______
     ),
     [_SYS] = LAYOUT(
-        RESET  ,          _______, _______, _______, _______,     _______, _______, _______, _______,      _______, _______, _______, _______,     _______, _______, _______, _______,
+        _______,          _______, _______, _______, _______,     _______, _______, _______, _______,      _______, _______, _______, _______,     _______, _______, _______, RESET  ,
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,              _______, _______, _______, _______,
         _______, KC_Q_SPAM, KC_W_SPAM, KC_E_SPAM, KC_R_SPAM, _______, _______, _______, _______, _______, _______, _______, _______, VRSN,         _______, _______, _______, _______,
         _______, KC_A_SPAM, KC_S_SPAM, KC_D_SPAM, KC_F_SPAM, KC_G_SPAM, _______, _______, _______, _______, _______, _______, KC_MAKE,             _______, _______, _______,
-        _______,            _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,   _______, _______, _______, _______,
+        _______,            _______, _______, _______, _______, _______, NK_TOGG, _______, _______, _______, _______, _______,          _______,   _______, _______, _______, _______,
         _______,   GUI_TOG, _______,                      _______,                             _______, _______, _______,      _______, _______, _______,   _______, _______
     ),
     [_ETC] = LAYOUT(
@@ -194,6 +205,37 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ),
 
 
+//===============Custom Functions=========================//
+// Enable splash math function if ENABLE_RGB_MATRIX_SPLASH was not defined
+#if !defined (ENABLE_RGB_MATRIX_SPLASH)
+    // Splash animation math
+    HSV SPLASH_math(HSV hsv, int16_t dx, int16_t dy, uint8_t dist, uint16_t tick) {
+        uint16_t effect = tick - dist;
+        if (effect > 255) effect = 255;
+        hsv.h += effect;
+        hsv.v = qadd8(hsv.v, 255 - effect);
+        return hsv;
+    }
+#endif
+
+#if defined (ENABLE_RGB_MATRIX_SPLASH)
+    HSV SPLASH_math(HSV hsv, int16_t dx, int16_t dy, uint8_t dist, uint16_t tick);
+#endif
+// End of splash math functions
+
+// Boot animation, run only if RGB_MATRIX_ENABLED is defined and if the matrix is enabled.
+void rgb_matrix_boot_anim(uint8_t boot_anim) {
+    #if defined (RGB_MATRIX_ENABLE)
+        if (rgb_matrix_config.enable) {
+            rgb_matrix_sethsv_noeeprom( rgb_matrix_config.hsv.h, rgb_matrix_config.hsv.s, RGB_MATRIX_MAXIMUM_BRIGHTNESS);   // Set brightness to maximum allowed before playing animation
+            rgb_matrix_set_speed_noeeprom(64);                                                                              // Set animation speed to default before playing animation
+            boot_timer = timer_read();
+            boot_status = boot_anim;
+        }
+    #endif
+} // End of boot animation
+
+//===============Custom Functions End=====================//
 
 //=================Keycode Functions ================//
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -269,7 +311,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     } else {    // On key press
         switch (keycode) {
         case RGB_MODE_FORWARD ... RGB_SPD:  // Add RGB_MOD_FLAG = true to all RGB modification keys.
-            //RGB_MOD_FLAG = true;            //   This is to let the per key indicator know to stop if the RGB settings are modified so
+            RGB_MOD_FLAG = true;            //   This is to let the per key indicator know to stop if the RGB settings are modified so
             return true;                    //   the user can see the changes again without the layer indicator in the way
         default:
             return true;
@@ -326,8 +368,44 @@ void matrix_scan_user(void) {
 }
 //=======Matrix Scan User==========================//
 
+
+/* Boot_status
+*   1 = Run splash boot animation
+*   0 = Don't run anim / anim complete
+*/
 //==========Per Layer RGB Matrix indicators========//
 void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    void rgb_matrix_boot_anim_runner(uint8_t originx, uint8_t originy) {
+        for (uint8_t i = led_min; i < led_max; i++) {
+                    HSV hsv = rgb_matrix_config.hsv;
+                    hsv.v   = 0;
+                    for (uint8_t j = 0; j < 1; j++) {
+                        int16_t  dx   = g_led_config.point[i].x - originx;     // X origin of splash animation
+                        int16_t  dy   = g_led_config.point[i].y - originy;     // y origin of splash animation
+                        uint8_t  dist = sqrt16(dx * dx + dy * dy);
+                        uint16_t tick = scale16by8(timer_elapsed(boot_timer), qadd8(rgb_matrix_config.speed, 1));
+                        hsv           = SPLASH_math(hsv, dx, dy, dist, tick);
+                    }
+                    hsv.v   = scale8(hsv.v, rgb_matrix_config.hsv.v);
+                    RGB rgb = hsv_to_rgb(hsv);
+                    rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
+                }
+    }
+
+    // Boot animation Code
+    switch(boot_status) {
+    case 1:
+        if (timer_elapsed(boot_timer) >= STARTUP_ANIM_TIME) {                                                   // If timer is > boot animation time, load the saved RGB mode and fade in
+            rgb_matrix_sethsv_noeeprom( rgb_matrix_config.hsv.h, rgb_matrix_config.hsv.s, rgb_original_hsv.v);  // Reset HSV.v to original value
+            rgb_matrix_set_speed_noeeprom(rgb_matrix_config.speed);                                             // Reset speed to original value
+            eeprom_read_block(&rgb_matrix_config, EECONFIG_RGB_MATRIX, sizeof(rgb_matrix_config));
+            rgb_matrix_mode_noeeprom(rgb_matrix_config.mode);                                                   // Load original mode
+            boot_status = 0;
+        } else {                                                                                                // Otherwise, run boot animation
+            rgb_matrix_boot_anim_runner(112,0);
+        }
+        return;
+    }   // End boot animation code
 
     // Layer indicator code
     if (get_highest_layer(layer_state) > 0 && !RGB_MOD_FLAG) {
@@ -355,6 +433,12 @@ void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
                                 break;
                             case LCTL(KC_BSPC):
                                 hsv.h = 0;  // RED
+                                break;
+                            case KC_MAKE:
+                                hsv.h = 43; // YELLOW
+                                break;
+                            case VRSN:
+                                hsv.h = 43; // YELLOW
                                 break;
                             // Keep at bottom
                             case NK_TOGG:
@@ -384,3 +468,13 @@ void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     } // End of layer indicator code
 }
 //==========Per Layer RGB Matrix indicators========//
+
+//==========Keyboard init/suspend functions========//
+// code will run on keyboard wakeup
+void suspend_wakeup_init_user(void) {
+    // Fade in RGB when first plugging in kb or on resume from sleep
+    #if (defined (RGB_MATRIX_ENABLE)) || (defined (RGBLIGHT_ENABLE))
+        rgb_matrix_boot_anim(1);
+    #endif
+}
+//=======Keyboard init/suspend functions End=======//
