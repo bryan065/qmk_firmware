@@ -2,6 +2,12 @@
 #define QMK_KEYS_PER_SCAN 4
 #define DEBOUNCE 3
 
+/* USB Device descriptor parameter */
+#undef VENDOR_ID
+#undef PRODUCT
+#define VENDOR_ID    0x4B52 //KP - Updated to match default firmware
+#define PRODUCT      Lithglow980
+
 #define FORCE_NKRO
 
 // RGB Matrix
