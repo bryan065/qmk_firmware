@@ -1,0 +1,9 @@
+B1 - column 1 - SCLK
+B2 - Column 2 - MOSI
+B3 - Column 3 - MISO
+
+avrdude.exe -p atmega32u4 -B 2 -c usbasp-clone -U flash:w:"D:\GitHub\qmk_firmware\bootloader_atmega32u4_1.0.0.hex":i
+avrdude.exe -p atmega32u4 -B 2 -c usbasp-clone -U flash:w:"D:\GitHub\qmk_firmware\KB_PROD.hex":i
+
+avrdude -c usbasp-clone -p atmega32u4 -B 2 -U lfuse:r:-:i -v -F
+
