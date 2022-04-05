@@ -84,7 +84,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______,     RGB_TOG, RGB_MOD, RGB_HUI, RGB_HUD, RGB_SAI, RGB_SAD, RGB_VAI, RGB_VAD, _______, _______, _______, _______, _______,
         _______,       RMT,  RMS,  RMIH,  RMDH,  RMIS,  RMDS,  RMIV,  RMDV, _______, _______, _______, _______,
         _______,            _______, _______, _______, _______, _______, NK_TOGG, _______, _______, _______, _______,        _______, _______,
-        _______,   _______,   _______,                      _______,                              _______, _______, _______, _______, _______
+        _______,   GUI_TOG,   _______,                      _______,                              _______, _______, _______, _______, _______
     ),
      [2] = LAYOUT(
         _______, _______,  _______,_______,_______,_______,_______,_______,_______,_______,_______,_______,_______,_______,  _______, _______, _______,
@@ -116,3 +116,68 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     return false;
 }
 #endif
+
+void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    // Per layer indicator
+    for (uint8_t i = led_min; i <= led_max; i++) {
+        switch(get_highest_layer(layer_state|default_layer_state)) {
+            case 1:
+                rgb_matrix_set_color(i, RGB_YELLOW);
+                break;
+            case 2:
+                rgb_matrix_set_color(i, RGB_GREEN);
+                break;
+            case 3:
+                rgb_matrix_set_color(i, RGB_ORANGE);
+                break;
+            default:
+                break;
+        }
+    }
+
+    // Layer indicator code
+    if (get_highest_layer(layer_state) > 0) {
+        uint8_t layer = get_highest_layer(layer_state);
+
+        // Per configured key indicator
+        for (uint8_t row = 0; row < MATRIX_ROWS; ++row) {
+            for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
+                uint8_t index = g_led_config.matrix_co[row][col];
+
+                // Comparing LED index to matrix for configured keys or override keys
+                if (index >= led_min && index <= led_max && index != NO_LED) {
+
+                    uint16_t keycheck = keymap_key_to_keycode(layer, (keypos_t){col,row});
+                    HSV hsv = rgb_matrix_config.hsv;
+                    hsv.s   = 255;  // Ensure RGB colors are full saturation regardless of user's setting
+
+                    // Per key overrides
+                    switch (keycheck) {
+                        case RESET:
+                            hsv.h = 0;  // RED
+                            break;
+                        // Keep at bottom
+                        case NK_TOGG:
+                            if (keymap_config.nkro == 1) { hsv.h = 85; } // GREEN if nkro is enabled
+                            else
+                        case GUI_TOG:
+                            if (keymap_config.no_gui == 1) { hsv.h = 0; } // RED if GUI is disabled
+                            else
+                        default:        // Default per key color
+                            hsv.s = 0;  // Set per key lights to white and respect the user's hsv.v value
+                    }
+
+                    // Make the key lights a bit brighter
+                    if (hsv.v < (RGB_MATRIX_MAXIMUM_BRIGHTNESS - 30)) { hsv.v += 30; }
+                    else { hsv.v = RGB_MATRIX_MAXIMUM_BRIGHTNESS; }
+
+                    RGB rgb = hsv_to_rgb(hsv);
+                    RGB_MATRIX_INDICATOR_SET_COLOR(index, rgb.r, rgb.g, rgb.b);
+                } // End of comparison code
+            }
+        } // End of per configured key indicator
+
+    } // End of layer indicator code
+
+
+}
