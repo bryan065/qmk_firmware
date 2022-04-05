@@ -151,20 +151,25 @@ void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
                     HSV hsv = rgb_matrix_config.hsv;
                     hsv.s   = 255;  // Ensure RGB colors are full saturation regardless of user's setting
 
-                    // Per key overrides
-                    switch (keycheck) {
-                        case RESET:
-                            hsv.h = 0;  // RED
-                            break;
-                        // Keep at bottom
-                        case NK_TOGG:
-                            if (keymap_config.nkro == 1) { hsv.h = 85; } // GREEN if nkro is enabled
-                            else
-                        case GUI_TOG:
-                            if (keymap_config.no_gui == 1) { hsv.h = 0; } // RED if GUI is disabled
-                            else
-                        default:        // Default per key color
-                            hsv.s = 0;  // Set per key lights to white and respect the user's hsv.v value
+                    // If key is configured, light it up
+                    if (keycheck > KC_TRNS) {
+
+                        // Per key overrides
+                        switch (keycheck) {
+                            case RESET:
+                                hsv.h = 0;  // RED
+                                break;
+                            default:
+                                // Per key override with toggle indicator
+                                if (keycheck == NK_TOGG && keymap_config.nkro == 1) {
+                                    hsv.h = 85; // GREEN if nkro is enabled
+                                } else if (keycheck == GUI_TOG && keymap_config.no_gui == 1) {
+                                    hsv.h = 0;  // RED if GUI is disabled
+                                }
+                                else {
+                                    hsv.s = 0;  // Set per key lights to white and respect the user's hsv.v value
+                                }
+                        }
                     }
 
                     // Make the key lights a bit brighter
