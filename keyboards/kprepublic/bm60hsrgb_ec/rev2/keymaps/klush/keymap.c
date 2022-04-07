@@ -118,23 +118,6 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 #endif
 
 void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
-    // Per layer indicator
-    for (uint8_t i = led_min; i <= led_max; i++) {
-        switch(get_highest_layer(layer_state|default_layer_state)) {
-            case 1:
-                rgb_matrix_set_color(i, RGB_YELLOW);    // Layer 1 indicator color
-                break;
-            case 2:
-                rgb_matrix_set_color(i, RGB_GREEN);     // Layer 2 indicator color
-                break;
-            case 3:
-                rgb_matrix_set_color(i, RGB_ORANGE);    // Layer 3 indicator color
-                break;
-            default:
-                break;
-        }
-    }
-
     // Layer indicator code
     if (get_highest_layer(layer_state) > 0) {
         uint8_t layer = get_highest_layer(layer_state);
@@ -162,12 +145,33 @@ void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
                             default:
                                 // Per key override with toggle indicator
                                 if (keycheck == NK_TOGG && keymap_config.nkro == 1) {
-                                    hsv.h = 85; // GREEN if nkro is enabled
-                                } else if (keycheck == GUI_TOG && keymap_config.no_gui == 1) {
-                                    hsv.h = 0;  // RED if GUI is disabled
+                                    if (keymap_config.nkro == 1) {
+                                        hsv.h = 85; // COLOR IF NKRO IS ENABLED
+                                    } else {
+                                        hsv.h = 85; // COLOR IF NKRO IS DISABLED
+                                    }
+                                } else if (keycheck == GUI_TOG) {
+                                    if (keymap_config.no_gui == 1) {
+                                        hsv.h = 0;  // COLOR IF GUI IS DISABLED
+                                    } else {
+                                        hsv.h = 0;  // COLOR IF GUI IS ENABLED
+                                    }
                                 }
                                 else {
-                                    hsv.s = 0;  // Set per key lights to white and respect the user's hsv.v value
+                                    // Layer indicator
+                                    switch(get_highest_layer(layer_state|default_layer_state)) {
+                                        case 1:
+                                            hsv.h = 45;      // Layer 1 indicator color
+                                            break;
+                                        case 2:
+                                            hsv.h = 70;      // Layer 2 indicator color
+                                            break;
+                                        case 3:
+                                            hsv.h = 120;      // Layer 3 indicator color
+                                            break;
+                                        default:
+                                            break;
+                                    }
                                 }
                         }
                     }
