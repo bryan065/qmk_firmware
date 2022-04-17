@@ -1,6 +1,6 @@
 #define USB_POLLING_INTERVAL_MS 2
-#define QMK_KEYS_PER_SCAN 4
-#define DEBOUNCE 3
+#define QMK_KEYS_PER_SCAN 8
+#define DEBOUNCE 2
 
 /* USB Device descriptor parameter */
 #undef VENDOR_ID
