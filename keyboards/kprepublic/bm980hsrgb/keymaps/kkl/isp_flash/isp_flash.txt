@@ -6,4 +6,4 @@ avrdude.exe -p atmega32u4 -B 2 -c usbasp-clone -U flash:w:"D:\GitHub\qmk_firmwar
 avrdude.exe -p atmega32u4 -B 2 -c usbasp-clone -U flash:w:"D:\GitHub\qmk_firmware\KB_PROD.hex":i
 
 avrdude -c usbasp-clone -p atmega32u4 -B 2 -U lfuse:r:-:i -v -F
-
+./avrdude -c usbasp-clone -p atmega32u4 -B 46.88 -U lfuse:r:-:i -v -F
